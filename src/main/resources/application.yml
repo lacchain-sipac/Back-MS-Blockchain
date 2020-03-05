@@ -1,0 +1,8 @@
+server:
+  port: 8092
+---
+spring:
+  profiles: default
+  data:
+    mongodb:
+      uri: ${CONEXION_MONGO}/hondurasdb
