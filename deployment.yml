@@ -1,73 +1,70 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: honduras-fiduciarios-ms-blockchain
+  name: ms-blockchain-deployment
+  namespace: kube-honduras
   labels:
-    product: identidad
-    app: requestBlockchain
-    tier: backend
-    phase: uat
-    deployment: v1
+    app: ms-blockchain-honduras
 spec:
-  strategy:
-    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-blockchain-honduras
   template:
     metadata:
       labels:
-        product: identidad
-        app: requestBlockchain
-        tier: backend
-        phase: uat
-        deployment: v1
+        app: ms-blockchain-honduras
     spec:
       containers:
-        - image: {{DOCKER_IMAGE_TAG}}
-          name: honduras-fiduciarios-ms-blockchain
-          imagePullPolicy: Always
+        - env:
+            - name: CONEXION_MONGO
+              valueFrom:
+                secretKeyRef:
+                  name: secretsipac
+                  key: MONGO_CONNECTION
+            - name: ITERATION
+              value: "33"
+            - name: KEY_LENGTH
+              value: "256"
+            - name: MS-NOTIFY
+              value: http://ms-notify:8084
+            - name: PORT_SERVER
+              value: "8092"
+            - name: SECRET
+              value: mysecret
+            - name: MS-API-GATEWAY
+              value: http://ms-security:8090/
+            - name: PRIVATE_KEY_BACKEND
+              valueFrom:
+                secretKeyRef:
+                  name: secretsipac
+                  key: PRIVATE_KEY_BACKEND
+          image: {{DOCKER_IMAGE_TAG}}
+          name: ms-blockchain
           resources:
-              requests:
-                memory: 256Mi
-              limits:
-                memory: 512Mi
-          env:
-          - name: CONEXION_MONGO
-            value: "mongodb+srv://user-honduras:Rktj11KVEzU1Xrb5@clusterhonduras-qob3j.gcp.mongodb.net"
-          - name: SECRET
-            value: "mysecret"
-          - name: ITERATION
-            value: "33"
-          - name: KEY_LENGTH
-            value: "256"
-          - name: MS-NOTIFY
-            value: http://honduras-fiduciarios-msnotify-service      
-          ports: 
-          - containerPort: 8081
-            name: http
-            protocol: TCP
-          livenessProbe:
-            tcpSocket:
-              port: 8081
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            
+            requests:
+              cpu: 120m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
+      hostname: ms-blockchain
+      restartPolicy: Always
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: honduras-fiduciarios-ms-blockchain-service
+  name: ms-blockchain
+  namespace: kube-honduras
   labels:
-    product: identidad
-    tier: backend
-    phase: uat
-    deployment: v1
+    app: ms-blockchain-honduras
 spec:
   selector:
-    product: identidad
-    app: requestBlockchain
-    tier: backend
+    app: ms-blockchain-honduras
   ports:
-   - protocol: TCP
-     port: 80
-     targetPort: 8081
-     name: http
-  type: LoadBalancer
+    - protocol: TCP
+      port: 8092
+      targetPort: 8092
+      name: http
+  type: NodePort

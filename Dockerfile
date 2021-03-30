@@ -11,11 +11,10 @@ COPY $JAR_FILE $APP_HOME/
 WORKDIR $APP_HOME
 ENTRYPOINT ["sh", "-c"]
 CMD ["exec java -Djava.security.egd=file:/dev/./urandom -jar $APP_FILE"]
-EXPOSE 8081
+EXPOSE 8092
 
 # mvn clean install
-# docker build  -t us.gcr.io/hondu-pf/ms-blockchain:0.1.2 -f Dockerfile .
-# gcloud docker -- push us.gcr.io/hondu-pf/ms-blockchain:0.1.2
-# git commit -am 'fix idproject'
-# git push
+# docker build  -t us.gcr.io/hondu-pf/ms-blockchain:1.3.4 -f Dockerfile .
+# gcloud docker -- push us.gcr.io/hondu-pf/ms-blockchain:1.3.4
 
+#mvn sonar:sonar -Dsonar.host.url=https://steps.everis.com/sonarqube  -Dsonar.login=852e97078744df9153150f35c85ca8cbc8efeb23
